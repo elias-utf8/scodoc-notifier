@@ -5,7 +5,7 @@ use utf8;
 use LWP::UserAgent;
 use HTTP::Cookies;
 use JSON;
-use lib '.';
+use lib 'lib';
 use EmailNotifier;
 
 my $json_file = 'notes.json';
