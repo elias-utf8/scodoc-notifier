@@ -1,7 +1,8 @@
 # Scodoc Notifier
 
 Perl script that monitors grade changes on Scodoc and sends email notifications.
-Designed to work with the Bordeaux University Institute of Technology's SCODOC.
+
+Designed to work with the Bordeaux University Institute of Technology's scodoc.
 
 ## Dependencies
 
@@ -29,7 +30,7 @@ SMTP_PASS=your_smtp_password
 EMAIL_FROM=Sender Name <sender@example.com>
 EMAIL_TO=recipient@example.com
 ```
-You can use [[Brevo](https://app.brevo.com/)] for smtp provider (300 emails per day).
+You can use [Brevo](https://app.brevo.com/) for smtp provider (300 emails per day).
 
 ### Configuration details:
 
