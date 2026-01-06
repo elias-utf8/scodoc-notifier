@@ -9,7 +9,7 @@ Designed to work with the Bordeaux University Institute of Technology's scodoc.
 Install the required Perl modules:
 
 ```bash
-cpanm JSON MIME::Lite
+cpan JSON MIME::Lite
 ```
 
 ## Configuration
