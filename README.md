@@ -1,4 +1,4 @@
-# Scodoc Notifier
+# Scodoc Notifier <img src="https://github.com/elias-utf8/scodoc-notifier/blob/master/media/logo.png" alt="logo" width="65"/>
 
 Perl script that monitors grade changes on Scodoc and sends email notifications.
 
@@ -63,3 +63,9 @@ Then add:
 ```
 
 Replace `/path/to/scodoc-notifier` with the actual path to your project directory.
+
+## Screenshot
+
+<p align="center">
+  <img src="https://github.com/elias-utf8/scodoc-notifier/blob/master/media/screen.jpg" width="300"/>
+</p>
