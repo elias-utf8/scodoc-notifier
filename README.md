@@ -63,3 +63,9 @@ Then add:
 ```
 
 Replace `/path/to/scodoc-notifier` with the actual path to your project directory.
+
+## Screenshot
+
+<p align="center">
+  <img src="https://github.com/elias-utf8/scodoc-notifier/blob/master/media/screen.jpg" width="300"/>
+</p>
