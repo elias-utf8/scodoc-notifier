@@ -1,4 +1,4 @@
-# Scodoc Notifier
+# Scodoc Notifier <img src="https://github.com/elias-utf8/scodoc-notifier/blob/master/media/logo.png" alt="logo" width="65"/>
 
 Perl script that monitors grade changes on Scodoc and sends email notifications.
 
