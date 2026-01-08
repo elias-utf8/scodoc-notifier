@@ -7,6 +7,8 @@ use HTTP::Cookies;
 use JSON;
 use lib 'lib';
 use EmailNotifier;
+use TelegramNotifier;
+use NtfyNotifier;
 
 my $json_file = 'notes.json';
 
@@ -28,6 +30,13 @@ my $smtp_user = $ENV{SMTP_USER} or die "SMTP_USER not defined\n";
 my $smtp_pass = $ENV{SMTP_PASS} or die "SMTP_PASS not defined\n";
 my $email_from = $ENV{EMAIL_FROM} or die "EMAIL_FROM not defined\n";
 my $email_to = $ENV{EMAIL_TO} or die "EMAIL_TO not defined\n";
+
+# Telegram (optional)
+my $telegram_token = $ENV{TELEGRAM_BOT_TOKEN} // '';
+my $telegram_chat_id = $ENV{TELEGRAM_CHAT_ID} // '';
+
+# ntfy.sh (optional)
+my $ntfy_topic = $ENV{NTFY_TOPIC} // '';
 
 # load old grades
 my $old_data = -e $json_file ? decode_json(do { open my $fh, '<', $json_file; local $/; <$fh> }) : {};
@@ -72,18 +81,42 @@ foreach my $res (keys %$new_notes) {
     }
 }
 
-# send email if changes detected
+# send notifications if changes detected
 if (@changes) {
     my $body = join("\n", @changes);
-    
-    EmailNotifier::send_notification(
-        $smtp_host, $smtp_user, $smtp_pass,
-        $email_from, $email_to,
-        "New grades on Scodoc!",
-        $body
-    );
-    
-    print "Email sent with " . scalar(@changes) . " change(s)!\n";
+    my $title = "New grades on Scodoc!";
+    my @sent;
+
+    # Email
+    if (eval { EmailNotifier::send_notification($smtp_host, $smtp_user, $smtp_pass, $email_from, $email_to, $title, $body) }) {
+        push @sent, "Email";
+    } else {
+        warn "Email error: $@\n" if $@;
+    }
+
+    # Telegram
+    if ($telegram_token && $telegram_chat_id) {
+        if (eval { TelegramNotifier::send_notification($telegram_token, $telegram_chat_id, "$title\n\n$body") }) {
+            push @sent, "Telegram";
+        } else {
+            warn "Telegram error: $@\n" if $@;
+        }
+    }
+
+    # ntfy.sh
+    if ($ntfy_topic) {
+        if (eval { NtfyNotifier::send_notification($ntfy_topic, $title, $body) }) {
+            push @sent, "ntfy.sh";
+        } else {
+            warn "ntfy.sh error: $@\n" if $@;
+        }
+    }
+
+    if (@sent) {
+        print "Notifications sent via: " . join(", ", @sent) . " (" . scalar(@changes) . " change(s))\n";
+    } else {
+        print "Warning: No notifications were sent successfully!\n";
+    }
 } else {
     print "No changes detected.\n";
 }
