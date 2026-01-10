@@ -73,10 +73,9 @@ foreach my $res (keys %$new_notes) {
         my $id = $eval->{id};
         my $old_eval = find_eval($old_notes, $id);
         
+        # Notify only when a new grade appears (not modifications)
         if (!$old_eval) {
-            push @changes, "NEW: $res - " . $eval->{description} . " : " . $eval->{note}{value};
-        } elsif ($old_eval->{note}{value} ne $eval->{note}{value}) {
-            push @changes, "MODIFIED: $res - " . $eval->{description} . " : " . $old_eval->{note}{value} . " -> " . $eval->{note}{value};
+            push @changes, "Nouvelle note : $res - " . $eval->{description};
         }
     }
 }
@@ -84,7 +83,7 @@ foreach my $res (keys %$new_notes) {
 # send notifications if changes detected
 if (@changes) {
     my $body = join("\n", @changes);
-    my $title = "New grades on Scodoc!";
+    my $title = "Nouvelles notes sur Scodoc !";
     my @sent;
 
     # Email
