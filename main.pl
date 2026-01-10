@@ -38,8 +38,14 @@ my $telegram_chat_id = $ENV{TELEGRAM_CHAT_ID} // '';
 # ntfy.sh (optional)
 my $ntfy_topic = $ENV{NTFY_TOPIC} // '';
 
-# load old grades
-my $old_data = -e $json_file ? decode_json(do { open my $fh, '<', $json_file; local $/; <$fh> }) : {};
+# load old grades (only evaluations IDs and data)
+my $old_notes = {};
+if (-e $json_file && -s $json_file) {
+    open my $fh, '<', $json_file;
+    my $json_content = do { local $/; <$fh> };
+    close $fh;
+    $old_notes = decode_json($json_content) if $json_content;
+}
 
 # login Scodoc
 my $ua = LWP::UserAgent->new(
@@ -62,9 +68,11 @@ $ua->post($cas_url, {
 
 # fetch new grades
 my $response = $ua->post('https://notes.iut.u-bordeaux.fr/services/data.php?q=dataPremièreConnexion');
-my $new_data = decode_json($response->decoded_content);
+my $content = $response->decoded_content;
+die "Failed to fetch data: " . $response->status_line . "\n" unless $response->is_success;
+die "Empty response from server\n" unless $content;
+my $new_data = decode_json($content);
 
-my $old_notes = $old_data->{relevé}{ressources} // {};
 my $new_notes = $new_data->{relevé}{ressources} // {};
 my @changes;
 
@@ -120,9 +128,9 @@ if (@changes) {
     print "No changes detected.\n";
 }
 
-# Save
+# Save only resources (not all personal data)
 open my $fh, '>', $json_file;
-print $fh encode_json($new_data);
+print $fh encode_json($new_notes);
 close $fh;
 
 sub find_eval {
