@@ -5,16 +5,20 @@ use utf8;
 use LWP::UserAgent;
 use HTTP::Cookies;
 use JSON;
-use lib 'lib';
+use File::Basename;
+use lib dirname(__FILE__) . '/lib';
 use EmailNotifier;
 use TelegramNotifier;
 use NtfyNotifier;
 
-my $json_file = 'notes.json';
+# Use absolute path based on script location
+my $script_dir = dirname(__FILE__);
+my $json_file = "$script_dir/notes.json";
 
-# load .env
-if (-e '.env') {
-    open my $fh, '<', '.env';
+# load .env (use absolute path)
+my $env_file = "$script_dir/.env";
+if (-e $env_file) {
+    open my $fh, '<', $env_file;
     while (<$fh>) {
         chomp;
         my ($k, $v) = split /=/, $_, 2;
@@ -62,7 +66,14 @@ $ua->post($cas_url, {
 
 # fetch new grades
 my $response = $ua->post('https://notes.iut.u-bordeaux.fr/services/data.php?q=dataPremièreConnexion');
-my $new_data = decode_json($response->decoded_content);
+unless ($response->is_success) {
+    die "Failed to fetch grades: " . $response->status_line . "\n";
+}
+my $content = $response->decoded_content;
+unless ($content && $content =~ /^\s*\{/) {
+    die "Invalid response from server (not JSON)\n";
+}
+my $new_data = decode_json($content);
 
 my $old_notes = $old_data->{relevé}{ressources} // {};
 my $new_notes = $new_data->{relevé}{ressources} // {};
@@ -121,10 +132,14 @@ if (@changes) {
     print "No changes detected.\n";
 }
 
-# Save
-open my $fh, '>', $json_file;
-print $fh encode_json($new_data);
-close $fh;
+# Save only if we got valid data
+if ($new_notes && keys %$new_notes) {
+    open my $fh, '>', $json_file;
+    print $fh encode_json($new_data);
+    close $fh;
+} else {
+    warn "Warning: No grades data received, keeping old state file\n";
+}
 
 sub find_eval {
     my ($notes, $id) = @_;
